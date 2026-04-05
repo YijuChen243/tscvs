@@ -159,8 +159,8 @@
         <div class="max-w-2xl mx-auto">
             <div class="flex items-center justify-between gap-4">
                 <div class="flex-1 relative">
-                    <label for="cust-name" class="absolute -top-6 left-1 text-[10px] font-bold text-red-500">* 必填項</label>
-                    <input type="text" id="cust-name" placeholder="輸入桌號或稱呼" class="w-full border-2 border-gray-100 p-3 rounded-xl text-sm focus:border-blue-500 outline-none transition-all bg-white" required>
+                    <label for="cust-name" class="absolute -top-6 left-1 text-[10px] font-bold text-red-500">*必填</label>
+                    <input type="text" id="cust-name" placeholder="輸入姓名" class="w-full border-2 border-gray-100 p-3 rounded-xl text-sm focus:border-blue-500 outline-none transition-all bg-white" required>
                 </div>
                 <div class="flex items-center gap-3 bg-blue-900 text-white px-5 py-3.5 rounded-2xl cursor-pointer active:scale-95 transition-transform" onclick="toggleCart()">
                     <div class="text-lg relative">
@@ -177,7 +177,7 @@
     <div id="cart-modal">
         <div class="bg-white w-full max-w-sm rounded-3xl overflow-hidden flex flex-col max-h-[85vh] shadow-2xl">
             <div class="p-5 border-b flex justify-between items-center">
-                <span class="font-black text-blue-900 text-lg">您的購物籃</span>
+                <span class="font-black text-blue-900 text-lg">您的購物車</span>
                 <button onclick="toggleCart()" class="w-8 h-8 flex items-center justify-center bg-gray-100 rounded-full text-xl">&times;</button>
             </div>
             <div id="cart-details" class="p-5 overflow-y-auto flex-1 space-y-3"></div>
