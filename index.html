@@ -149,6 +149,7 @@
         </section>
         <div class="flex justify-between items-center mb-4 px-2">
             <h2 class="text-lg font-black text-slate-800">訂單流水帳</h2>
+            <button id="export-excel-btn" class="text-xs text-blue-600 font-bold px-3 py-1 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors">📋 匯出 Excel</button>
             <button onclick="clearAllOrders()" class="text-xs text-red-500 font-bold px-3 py-1 bg-red-50 rounded-lg">清空紀錄</button>
         </div>
         <div id="order-history" class="space-y-4"></div>
@@ -626,6 +627,32 @@
             const deleteDocFn = window.fbOps ? window.fbOps.deleteDoc : deleteDoc;
             await deleteDocFn(targetDoc);
         };
+      // Excel 匯出 (相容性修正版)
+        document.getElementById('export-excel-btn').onclick = () => {
+            if (allOrders.length === 0) return alert('無訂單資料');
+            let txt = "時間\t客戶\t品項\t金額\n";
+            allOrders.forEach(o => {
+                const time = o.timestamp ? new Date(o.timestamp.seconds*1000).toLocaleString() : '...';
+                txt += `${time}\t${o.name}\t${o.items.map(i=>`${i.name}x${i.count}`).join(',')}\t${o.total}\n`;
+            });
+            
+            // 使用相容性更高的傳統複製方法 (可避開 iFrame 與安全限制)
+            const textArea = document.createElement("textarea");
+            textArea.value = txt;
+            document.body.appendChild(textArea);
+            textArea.select();
+            
+            try {
+                document.execCommand('copy');
+                alert('✅ 已將訂單數據複製到剪貼簿！\n\n請至 Excel 選取任一儲存格並按 [Ctrl + V] 貼上。');
+            } catch (err) {
+                console.error('複製失敗', err);
+                alert('複製失敗，這可能是您的瀏覽器安全設定所致。');
+            }
+            
+            document.body.removeChild(textArea);
+        };
+        
 
         window.clearAllOrders = async () => {
             if(!confirm('⚠️ 警告：這將會清除所有歷史訂單。確定嗎？')) return;
