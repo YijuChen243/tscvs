@@ -108,7 +108,7 @@
         </section>
 
         <section class="category-card">
-            <div class="category-header">🥤 飲品系列</div>
+            <div class="category-header">🥤 飲品系列 (冷/熱飲)</div>
             <div id="drink-list" class="p-4 space-y-4"></div>
         </section>
     </main>
@@ -149,7 +149,7 @@
         </section>
         <div class="flex justify-between items-center mb-4 px-2">
             <h2 class="text-lg font-black text-slate-800">訂單流水帳</h2>
-            <button id="export-excel-btn" class="text-xs text-blue-600 font-bold px-3 py-1 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors">📋 匯出 Excel</button>
+            <button id="export-excel-btn" class="text-xs text-blue-600 font-bold px-3 py-1 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors">📋 匯出 Excel (CSV)</button>
             <button onclick="clearAllOrders()" class="text-xs text-red-500 font-bold px-3 py-1 bg-red-50 rounded-lg">清空紀錄</button>
         </div>
         <div id="order-history" class="space-y-4"></div>
@@ -161,7 +161,7 @@
             <div class="flex items-center justify-between gap-4">
                 <div class="flex-1 relative">
                     <label for="cust-name" class="absolute -top-6 left-1 text-[10px] font-bold text-red-500">*必填</label>
-                    <input type="text" id="cust-name" placeholder="輸入姓名" class="w-full border-2 border-gray-100 p-3 rounded-xl text-sm focus:border-blue-500 outline-none transition-all bg-white" required>
+                    <input type="text" id="cust-name" placeholder="輸入姓名或桌號" class="w-full border-2 border-gray-100 p-3 rounded-xl text-sm focus:border-blue-500 outline-none transition-all bg-white" required>
                 </div>
                 <div class="flex items-center gap-3 bg-blue-900 text-white px-5 py-3.5 rounded-2xl cursor-pointer active:scale-95 transition-transform" onclick="toggleCart()">
                     <div class="text-lg relative">
@@ -197,7 +197,7 @@
         <div class="bg-white p-8 rounded-3xl w-full max-w-xs text-center shadow-2xl">
             <div class="text-4xl mb-4">🔐</div>
             <h3 class="font-black text-xl mb-2 text-slate-800">管理權限</h3>
-            <p class="text-xs text-gray-400 mb-6">請輸入管理密碼以訪問後台</p>
+            <p class="text-xs text-gray-400 mb-6">請輸入管理密碼以訪問後台 (預設: 8888)</p>
             <input type="password" id="admin-pw" placeholder="••••" class="w-full border-2 p-4 rounded-2xl mb-6 text-center text-xl tracking-[0.5em] focus:border-blue-500 outline-none">
             <div class="flex gap-3">
                 <button onclick="document.getElementById('login-modal').style.display='none'" class="flex-1 py-3 text-gray-400 font-bold">取消</button>
@@ -208,11 +208,11 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, collection, onSnapshot, addDoc, updateDoc, deleteDoc, serverTimestamp, writeBatch, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, collection, onSnapshot, addDoc, updateDoc, deleteDoc, serverTimestamp, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // ==========================================
-        // ⚠️ 上線前，請將這行替換為您真正的 Firebase API Key！
+        // ⚠️ 上線前，請確認您的 Firebase API Key 設定
         // ==========================================
         let firebaseConfig = {
             apiKey: "AIzaSyA5j12QVpXANAb9cXGhylb6pGl0pr8GIt8",
@@ -226,7 +226,6 @@
 
         let currentAppId = 'blue-plate-official';
 
-        // 自動判斷機制：如果在預覽環境中，自動載入系統測試金鑰，避免跳出錯誤
         if (typeof __firebase_config !== 'undefined') {
             firebaseConfig = JSON.parse(__firebase_config);
             currentAppId = typeof __app_id !== 'undefined' ? __app_id : currentAppId;
@@ -247,118 +246,67 @@
                 { name: "厚牛起司堡雞塊拼盤", price: 119, desc: "厚牛堡、雞塊、薯泥球" }
             ],
             noodles: [
-                { name: '中式炒麵', price: 35 },
-                { name: '煙燻培根炒麵', price: 49 },
-                { name: '鐵板雞排炒麵', price: 65 },
-                { name: '香煎腿排炒麵', price: 75 },
-                { name: '黑胡椒鐵板麵+蛋', price: 55 },
-                { name: '蘑菇鐵板麵+蛋', price: 55 },
-                { name: '炒泡麵(原味)', price: 59 },
-                { name: '泡菜炒泡麵', price: 69 },
-                { name: '打拋豬炒泡麵', price: 75 },
-                { name: '鐵板雞排炒泡麵', price: 89 },
-                { name: '鍋燒意麵', price: 75 },
-                { name: '鍋燒雞絲麵', price: 75 },
-                { name: '鍋燒冬粉', price: 75 },
-                { name: '鍋燒烏龍麵', price: 79 },
-                { name: '泡菜鍋燒意麵', price: 85 },
-                { name: '泡菜鍋燒雞絲麵', price: 85 },
-                { name: '泡菜鍋燒冬粉', price: 85 },
-                { name: '泡菜鍋燒烏龍麵', price: 89 },
-                { name: '麻辣燙細麵', price: 69 },
-                { name: '椒麻刀削麵', price: 75 },
-                { name: '麻醬關廟麵', price: 75 },
-                { name: '蔥油乾拌麵', price: 75 }
+                { name: '中式炒麵', price: 35 }, { name: '煙燻培根炒麵', price: 49 },
+                { name: '鐵板雞排炒麵', price: 65 }, { name: '香煎腿排炒麵', price: 75 },
+                { name: '黑胡椒鐵板麵+蛋', price: 55 }, { name: '蘑菇鐵板麵+蛋', price: 55 },
+                { name: '炒泡麵(原味)', price: 59 }, { name: '泡菜炒泡麵', price: 69 },
+                { name: '打拋豬炒泡麵', price: 75 }, { name: '鐵板雞排炒泡麵', price: 89 },
+                { name: '鍋燒意麵', price: 75 }, { name: '鍋燒雞絲麵', price: 75 },
+                { name: '鍋燒冬粉', price: 75 }, { name: '鍋燒烏龍麵', price: 79 },
+                { name: '泡菜鍋燒意麵', price: 85 }, { name: '泡菜鍋燒雞絲麵', price: 85 },
+                { name: '泡菜鍋燒冬粉', price: 85 }, { name: '泡菜鍋燒烏龍麵', price: 89 },
+                { name: '麻辣燙細麵', price: 69 }, { name: '椒麻刀削麵', price: 75 },
+                { name: '麻醬關廟麵', price: 75 }, { name: '蔥油乾拌麵', price: 75 }
             ],
             burgers: [
-                { name: '墨西哥雞肉芝士堡', p1: 50, p2: 55 },
-                { name: '醬汁燒肉芝士堡', p1: 55, p2: 60 },
-                { name: '元氣豬肉芝士堡', p1: 55, p2: 60 },
-                { name: '鐵板雞排芝士堡', p1: 60, p2: 65 },
-                { name: '芥末黃瓜牛肉芝士堡', p1: 60, p2: 65 },
-                { name: '塔塔醬魚排芝士堡', p1: 60, p2: 65 },
-                { name: '墨西哥蝦排芝士堡', p1: 65, p2: 70 },
-                { name: '卡啦雞腿芝士堡(原味)', p1: 65, p2: 70 },
-                { name: '墨西哥卡啦雞腿芝士堡', p1: 70, p2: 75 },
-                { name: '香煎腿排芝士堡', p1: 70, p2: 75 },
-                { name: '培根厚牛芝士堡', p1: 70, p2: 75 },
-                { name: '雙層厚豬芝士堡', p1: 75, p2: 79 },
-                { name: '雙層厚牛芝士堡', p1: 75, p2: 79 },
-                { name: '花醬培根厚牛芝士堡', p1: 75, p2: 79 },
-                { name: '起司菠蘿堡', p2: 35 },
-                { name: '花生起司菠蘿堡', p2: 45 }
+                { name: '墨西哥雞肉芝士堡', p1: 50, p2: 55 }, { name: '醬汁燒肉芝士堡', p1: 55, p2: 60 },
+                { name: '元氣豬肉芝士堡', p1: 55, p2: 60 }, { name: '鐵板雞排芝士堡', p1: 60, p2: 65 },
+                { name: '芥末黃瓜牛肉芝士堡', p1: 60, p2: 65 }, { name: '塔塔醬魚排芝士堡', p1: 60, p2: 65 },
+                { name: '墨西哥蝦排芝士堡', p1: 65, p2: 70 }, { name: '卡啦雞腿芝士堡(原味)', p1: 65, p2: 70 },
+                { name: '墨西哥卡啦雞腿芝士堡', p1: 70, p2: 75 }, { name: '香煎腿排芝士堡', p1: 70, p2: 75 },
+                { name: '培根厚牛芝士堡', p1: 70, p2: 75 }, { name: '雙層厚豬芝士堡', p1: 75, p2: 79 },
+                { name: '雙層厚牛芝士堡', p1: 75, p2: 79 }, { name: '花醬培根厚牛芝士堡', p1: 75, p2: 79 },
+                { name: '起司菠蘿堡', p2: 35 }, { name: '花生起司菠蘿堡', p2: 45 }
             ],
             toasts: [
-                { name: '田園蔬菜煎蛋', p1: 35, p2: 40 },
-                { name: '火腿芝士', p1: 40, p2: 45 },
-                { name: '煙燻培根芝士', p1: 40, p2: 45 },
-                { name: '手炒肉鬆蛋', p1: 40, p2: 45 },
-                { name: '陽光鮪魚芝士', p1: 40, p2: 45 },
-                { name: '墨西哥雞肉芝士', p1: 45, p2: 50 },
-                { name: '元氣豬肉芝士', p1: 50, p2: 55 },
-                { name: '醬汁燒肉芝士', p1: 50, p2: 55 },
-                { name: '鐵板雞排芝士', p1: 55, p2: 60 },
-                { name: '塔塔醬魚排芝士', p1: 55, p2: 60 },
-                { name: '墨西哥蝦排芝士', p1: 60, p2: 65 },
-                { name: '卡啦雞腿芝士(原味)', p1: 60, p2: 65 },
-                { name: '墨西哥卡啦雞腿芝士', p1: 65, p2: 70 },
-                { name: '香煎腿排芝士', p1: 65, p2: 70 }
+                { name: '田園蔬菜煎蛋', p1: 35, p2: 40 }, { name: '火腿芝士', p1: 40, p2: 45 },
+                { name: '煙燻培根芝士', p1: 40, p2: 45 }, { name: '手炒肉鬆蛋', p1: 40, p2: 45 },
+                { name: '陽光鮪魚芝士', p1: 40, p2: 45 }, { name: '墨西哥雞肉芝士', p1: 45, p2: 50 },
+                { name: '元氣豬肉芝士', p1: 50, p2: 55 }, { name: '醬汁燒肉芝士', p1: 50, p2: 55 },
+                { name: '鐵板雞排芝士', p1: 55, p2: 60 }, { name: '塔塔醬魚排芝士', p1: 55, p2: 60 },
+                { name: '墨西哥蝦排芝士', p1: 60, p2: 65 }, { name: '卡啦雞腿芝士(原味)', p1: 60, p2: 65 },
+                { name: '墨西哥卡啦雞腿芝士', p1: 65, p2: 70 }, { name: '香煎腿排芝士', p1: 65, p2: 70 }
             ],
             jams: [
-                { f: "花生", t: 20, c: 45, w: 45 },
-                { f: "巧克力", t: 20, c: 45, w: 45 },
-                { f: "奶酥", t: 20, c: 45, w: 45 }, 
-                { f: "草莓", t: 20, c: 45, w: 45 },
-                { f: "藍莓", t: 20, c: 45, w: 45 },
-                { f: "煉乳", t: 20, c: 45, w: 45 },
+                { f: "花生", t: 20, c: 45, w: 45 }, { f: "巧克力", t: 20, c: 45, w: 45 },
+                { f: "奶酥", t: 20, c: 45, w: 45 }, { f: "草莓", t: 20, c: 45, w: 45 },
+                { f: "藍莓", t: 20, c: 45, w: 45 }, { f: "煉乳", t: 20, c: 45, w: 45 },
                 { f: "芒果", t: 25, c: 50, w: 50 }
             ],
             eggs: [
-                { name: '原味蛋餅', p: 30 },
-                { name: '香甜玉米蛋餅', p: 35 },
-                { name: '特濃芝士蛋餅', p: 35 },
-                { name: '田園蔬菜蛋餅', p: 35 },
-                { name: '香煎火腿蛋餅', p: 40 },
-                { name: '熱狗蛋餅', p: 40 },
-                { name: '手炒肉鬆蛋餅', p: 40 },
-                { name: '煙燻培根蛋餅', p: 40 },
-                { name: '陽光鮪魚蛋餅', p: 40 },
-                { name: '黃金薯餅蛋餅', p: 45 },
-                { name: '爆漿乳酪芝士蛋餅', p: 45 },
-                { name: '泰式打拋豬蛋餅', p: 50 },
-                { name: '醬汁燒肉蛋餅', p: 50 },
-                { name: '芋泥肉鬆蛋餅', p: 50 },
-                { name: '厚豬蛋餅', p: 55 },
+                { name: '原味蛋餅', p: 30 }, { name: '香甜玉米蛋餅', p: 35 }, { name: '特濃芝士蛋餅', p: 35 },
+                { name: '田園蔬菜蛋餅', p: 35 }, { name: '香煎火腿蛋餅', p: 40 }, { name: '熱狗蛋餅', p: 40 },
+                { name: '手炒肉鬆蛋餅', p: 40 }, { name: '煙燻培根蛋餅', p: 40 }, { name: '陽光鮪魚蛋餅', p: 40 },
+                { name: '黃金薯餅蛋餅', p: 45 }, { name: '爆漿乳酪芝士蛋餅', p: 45 }, { name: '泰式打拋豬蛋餅', p: 50 },
+                { name: '醬汁燒肉蛋餅', p: 50 }, { name: '芋泥肉鬆蛋餅', p: 50 }, { name: '厚豬蛋餅', p: 55 },
                 { name: '厚牛蛋餅', p: 60 }
             ],
             snacks: [
-                { name: '黃金薯餅', price: 25 },
-                { name: '熱狗香蛋捲', price: 30 },
-                { name: '金磚蘿蔔糕', price: 35 },
-                { name: '金磚蘿蔔糕加蛋', price: 45 },
-                { name: '小熱狗3條', price: 20 },
-                { name: '骰子雞球', price: 45 },
-                { name: '麥克雞塊(5入)', price: 39 },
-                { name: '美式脆薯', price: 35 },
-                { name: '煎餃', price: 35 },
-                { name: '檸檬雞柳條2入', price: 45 },
-                { name: '洋蔥有圈圈5個', price: 39 },
-                { name: '荷包蛋', price: 12 },
+                { name: '黃金薯餅', price: 25 }, { name: '熱狗香蛋捲', price: 30 },
+                { name: '金磚蘿蔔糕', price: 35 }, { name: '金磚蘿蔔糕加蛋', price: 45 },
+                { name: '小熱狗3條', price: 20 }, { name: '骰子雞球', price: 45 },
+                { name: '麥克雞塊(5入)', price: 39 }, { name: '美式脆薯', price: 35 },
+                { name: '煎餃', price: 35 }, { name: '檸檬雞柳條2入', price: 45 },
+                { name: '洋蔥有圈圈5個', price: 39 }, { name: '荷包蛋', price: 12 },
                 { name: '蔥油餅加蛋', price: 40 }
             ],
             drinks: [
-                { name: '阿薩姆紅茶', m: 20, l: 25, xl: 30 },
-                { name: '茉香綠茶', m: 20, l: 25, xl: 30 },
-                { name: '阿薩姆奶茶', m: 30, l: 35, xl: 40 },
-                { name: '奶綠', m: 30, l: 35, xl: 40 },
-                { name: '豆漿(無糖)', m: 25, l: 30, xl: 35 },
-                { name: '豆漿(微糖)', m: 25, l: 30, xl: 35 },
-                { name: '豆漿紅茶', m: 25, l: 30, xl: 35 },
-                { name: '紅茶牛奶', l: 40, xl: 45 },
-                { name: '綠茶牛奶', l: 40, xl: 45 },
-                { name: '焦糖奶茶', l: 40, xl: 50 },
-                { name: '研磨美式咖啡', m: 30, xl: 49 },
-                { name: '研磨拿鐵咖啡', m: 40, xl: 69 },
+                { name: '阿薩姆紅茶', m: 20, l: 25, xl: 30 }, { name: '茉香綠茶', m: 20, l: 25, xl: 30 },
+                { name: '阿薩姆奶茶', m: 30, l: 35, xl: 40 }, { name: '奶綠', m: 30, l: 35, xl: 40 },
+                { name: '豆漿(無糖)', m: 25, l: 30, xl: 35 }, { name: '豆漿(微糖)', m: 25, l: 30, xl: 35 },
+                { name: '豆漿紅茶', m: 25, l: 30, xl: 35 }, { name: '紅茶牛奶', l: 40, xl: 45 },
+                { name: '綠茶牛奶', l: 40, xl: 45 }, { name: '焦糖奶茶', l: 40, xl: 50 },
+                { name: '研磨美式咖啡', m: 30, xl: 49 }, { name: '研磨拿鐵咖啡', m: 40, xl: 69 },
                 { name: '焦糖拿鐵咖啡', m: 40, xl: 69 }
             ]
         };
@@ -425,12 +373,24 @@
             `).join(''));
 
             setHtml('drink-list', menuData.drinks.map(dr => `
-                <div class="pb-2">
-                    <div class="font-bold text-slate-700 text-sm mb-2">${dr.name}</div>
-                    <div class="flex gap-2">
-                        ${dr.m ? `<div class="price-btn flex-1" data-name="${dr.name}(M)" onclick="toggleItem('${dr.name}(M)',${dr.m})">M $${dr.m}</div>` : ''}
-                        ${dr.l ? `<div class="price-btn flex-1" data-name="${dr.name}(L)" onclick="toggleItem('${dr.name}(L)',${dr.l})">L $${dr.l}</div>` : ''}
-                        ${dr.xl ? `<div class="price-btn flex-1" data-name="${dr.name}(XL)" onclick="toggleItem('${dr.name}(XL)',${dr.xl})">XL $${dr.xl}</div>` : ''}
+                <div class="pb-4 border-b border-gray-100 last:border-0 last:pb-0">
+                    <div class="font-bold text-slate-700 text-sm mb-3">${dr.name}</div>
+                    <div class="space-y-2">
+                        ${dr.m ? `
+                        <div class="flex gap-2">
+                            <div class="price-btn flex-1 text-blue-600 bg-blue-50/30 border-blue-100 hover:bg-blue-50" data-name="${dr.name}(M/冷)" onclick="toggleItem('${dr.name}(M/冷)',${dr.m})">🧊 M 冷 $${dr.m}</div>
+                            <div class="price-btn flex-1 text-red-500 bg-red-50/30 border-red-100 hover:bg-red-50" data-name="${dr.name}(M/熱)" onclick="toggleItem('${dr.name}(M/熱)',${dr.m})">♨️ M 熱 $${dr.m}</div>
+                        </div>` : ''}
+                        ${dr.l ? `
+                        <div class="flex gap-2">
+                            <div class="price-btn flex-1 text-blue-600 bg-blue-50/30 border-blue-100 hover:bg-blue-50" data-name="${dr.name}(L/冷)" onclick="toggleItem('${dr.name}(L/冷)',${dr.l})">🧊 L 冷 $${dr.l}</div>
+                            <div class="price-btn flex-1 text-red-500 bg-red-50/30 border-red-100 hover:bg-red-50" data-name="${dr.name}(L/熱)" onclick="toggleItem('${dr.name}(L/熱)',${dr.l})">♨️ L 熱 $${dr.l}</div>
+                        </div>` : ''}
+                        ${dr.xl ? `
+                        <div class="flex gap-2">
+                            <div class="price-btn flex-1 text-blue-600 bg-blue-50/30 border-blue-100 hover:bg-blue-50" data-name="${dr.name}(XL/冷)" onclick="toggleItem('${dr.name}(XL/冷)',${dr.xl})">🧊 XL 冷 $${dr.xl}</div>
+                            <div class="price-btn flex-1 text-red-500 bg-red-50/30 border-red-100 hover:bg-red-50" data-name="${dr.name}(XL/熱)" onclick="toggleItem('${dr.name}(XL/熱)',${dr.xl})">♨️ XL 熱 $${dr.xl}</div>
+                        </div>` : ''}
                     </div>
                 </div>
             `).join(''));
@@ -557,21 +517,15 @@
             const total = items.reduce((s, i) => s + (i.price * i.count), 0);
             
             try {
-                // 依據環境取得正確的存取路徑與函式
                 let targetCollection;
-                let addDocFn = window.fbOps ? window.fbOps.addDoc : addDoc;
-                let serverTimestampFn = window.fbOps ? window.fbOps.serverTimestamp : serverTimestamp;
-                
                 if (window.appId && window.appId !== 'blue-plate-official') {
-                    // Canvas 預覽環境路徑
                     targetCollection = collection(window.db, 'artifacts', window.appId, 'public', 'data', 'orders');
                 } else {
-                    // 正式上線 (Netlify) 路徑
                     targetCollection = collection(window.db, 'orders');
                 }
 
-                await addDocFn(targetCollection, {
-                    name, items, total, status: 'pending', timestamp: serverTimestampFn()
+                await addDoc(targetCollection, {
+                    name, items, total, status: 'pending', timestamp: serverTimestamp()
                 });
                 
                 const summary = items.map(i => `<div class="flex justify-between text-sm"><span>${i.name} x ${i.count}</span><span>$${i.price * i.count}</span></div>`).join('');
@@ -605,180 +559,158 @@
             window.scrollTo(0,0);
         };
 
-        window.updateStatus = async (id, status) => {
-            let targetDoc;
-            if (window.appId && window.appId !== 'blue-plate-official') {
-                targetDoc = doc(window.db, 'artifacts', window.appId, 'public', 'data', 'orders', id);
-            } else {
-                targetDoc = doc(window.db, 'orders', id);
-            }
-            const updateDocFn = window.fbOps ? window.fbOps.updateDoc : updateDoc;
-            await updateDocFn(targetDoc, { status });
-        };
+        // ========== 後台管理邏輯 ==========
 
-        window.deleteOrder = async (id) => {
-            if(!confirm('確定要刪除這筆訂單嗎？')) return;
-            let targetDoc;
-            if (window.appId && window.appId !== 'blue-plate-official') {
-                targetDoc = doc(window.db, 'artifacts', window.appId, 'public', 'data', 'orders', id);
-            } else {
-                targetDoc = doc(window.db, 'orders', id);
-            }
-            const deleteDocFn = window.fbOps ? window.fbOps.deleteDoc : deleteDoc;
-            await deleteDocFn(targetDoc);
-        };
-      // Excel 匯出 (相容性修正版)
-        document.getElementById('export-excel-btn').onclick = () => {
-            if (allOrders.length === 0) return alert('無訂單資料');
-            let txt = "時間\t客戶\t品項\t金額\n";
-            allOrders.forEach(o => {
-                const time = o.timestamp ? new Date(o.timestamp.seconds*1000).toLocaleString() : '...';
-                txt += `${time}\t${o.name}\t${o.items.map(i=>`${i.name}x${i.count}`).join(',')}\t${o.total}\n`;
-            });
-            
-            // 使用相容性更高的傳統複製方法 (可避開 iFrame 與安全限制)
-            const textArea = document.createElement("textarea");
-            textArea.value = txt;
-            document.body.appendChild(textArea);
-            textArea.select();
-            
+        window.updateStatus = async (id, status) => {
             try {
-                document.execCommand('copy');
-                alert('✅ 已將訂單數據複製到剪貼簿！\n\n請至 Excel 選取任一儲存格並按 [Ctrl + V] 貼上。');
-            } catch (err) {
-                console.error('複製失敗', err);
-                alert('複製失敗，這可能是您的瀏覽器安全設定所致。');
+                let targetDoc;
+                if (window.appId && window.appId !== 'blue-plate-official') {
+                    targetDoc = doc(window.db, 'artifacts', window.appId, 'public', 'data', 'orders', id);
+                } else {
+                    targetDoc = doc(window.db, 'orders', id);
+                }
+                await updateDoc(targetDoc, { status });
+            } catch(e) {
+                console.error('更新狀態失敗', e);
             }
-            
-            document.body.removeChild(textArea);
         };
-        
 
         window.clearAllOrders = async () => {
-            if(!confirm('⚠️ 警告：這將會清除所有歷史訂單。確定嗎？')) return;
-            
-            let targetCollection;
-            if (window.appId && window.appId !== 'blue-plate-official') {
-                targetCollection = collection(window.db, 'artifacts', window.appId, 'public', 'data', 'orders');
-            } else {
-                targetCollection = collection(window.db, 'orders');
-            }
-
-            const getDocsFn = window.fbOps ? window.fbOps.getDocs : getDocs;
-            const writeBatchFn = window.fbOps ? window.fbOps.writeBatch : writeBatch;
-
-            const snap = await getDocsFn(targetCollection);
-            const batch = writeBatchFn(window.db);
-            snap.forEach(d => batch.delete(d.ref));
-            await batch.commit();
-        };
-
-        window.startOrderListener = () => {
-            let targetCollection;
-            if (window.appId && window.appId !== 'blue-plate-official') {
-                targetCollection = collection(window.db, 'artifacts', window.appId, 'public', 'data', 'orders');
-            } else {
-                targetCollection = collection(window.db, 'orders');
-            }
-
-            const onSnapshotFn = window.fbOps ? window.fbOps.onSnapshot : onSnapshot;
-
-            onSnapshotFn(targetCollection, (snap) => {
-                allOrders = [];
-                snap.forEach(d => allOrders.push({ id: d.id, ...d.data() }));
-                allOrders.sort((a,b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0));
-                updateAdminUI();
-            }, (err) => console.error("即時監聽錯誤:", err));
-        };
-
-        function updateAdminUI() {
-            const hist = document.getElementById('order-history');
-            const revElem = document.getElementById('stat-revenue');
-            const countElem = document.getElementById('stat-orders');
-            const statTable = document.getElementById('stat-table-body');
-            
-            let totalRev = 0;
-            let itemStats = {}; 
-
-            hist.innerHTML = '';
-            allOrders.forEach(o => {
-                totalRev += o.total;
-
-                o.items.forEach(item => {
-                    if(!itemStats[item.name]) itemStats[item.name] = { count: 0, revenue: 0 };
-                    itemStats[item.name].count += item.count;
-                    itemStats[item.name].revenue += (item.price * item.count);
-                });
-
-                const d = document.createElement('div');
-                d.className = `p-4 rounded-2xl border bg-white shadow-sm transition-opacity ${o.status === 'done' ? 'opacity-50' : ''}`;
-                const time = o.timestamp ? new Date(o.timestamp.seconds*1000).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '...';
+            if(!confirm("確定要清空所有訂單紀錄嗎？\n這將無法復原！")) return;
+            try {
+                let targetCol = (window.appId && window.appId !== 'blue-plate-official') 
+                    ? collection(window.db, 'artifacts', window.appId, 'public', 'data', 'orders') 
+                    : collection(window.db, 'orders');
                 
-                d.innerHTML = `
-                    <div class="flex justify-between items-start mb-3">
-                        <div>
-                            <div class="flex items-center gap-2">
-                                <span class="font-black text-blue-900">${o.name}</span>
-                                <span class="status-badge ${o.status==='pending'?'status-pending':o.status==='cooking'?'status-cooking':'status-done'}">
-                                    ${o.status==='pending'?'待處理':o.status==='cooking'?'製作中':'完成'}
-                                </span>
-                            </div>
-                            <div class="text-[10px] text-gray-400 mt-0.5">${time}</div>
-                        </div>
-                        <div class="text-right">
-                            <div class="font-black text-red-600">$${o.total}</div>
-                            <button onclick="deleteOrder('${o.id}')" class="text-[10px] text-red-400">刪除</button>
-                        </div>
-                    </div>
-                    <div class="text-xs text-slate-500 bg-slate-50 p-2 rounded-lg mb-3">
-                        ${o.items.map(i => `<span class="inline-block mr-2">${i.name}x${i.count}</span>`).join('')}
-                    </div>
-                    <div class="flex gap-2">
-                        ${o.status === 'pending' ? `<button onclick="updateStatus('${o.id}','cooking')" class="flex-1 py-2.5 bg-amber-500 text-white rounded-xl text-xs font-bold">開始製作</button>` : ''}
-                        ${o.status !== 'done' ? `<button onclick="updateStatus('${o.id}','done')" class="flex-1 py-2.5 bg-blue-900 text-white rounded-xl text-xs font-bold">訂單完成</button>` : ''}
-                    </div>
-                `;
-                hist.appendChild(d);
+                const snap = await getDocs(targetCol);
+                snap.forEach(d => {
+                    deleteDoc(d.ref).catch(err=>console.error(err));
+                });
+                alert("已成功清空所有訂單！");
+            } catch(e) {
+                console.error('清空失敗', e);
+            }
+        };
+
+        // 匯出 CSV 檔案
+        document.getElementById('export-excel-btn').addEventListener('click', () => {
+            if(allOrders.length === 0) return alert('目前沒有任何訂單可以匯出');
+            
+            let csvContent = '\uFEFF'; // 加入 BOM 以支援 UTF-8 (Excel 才不會亂碼)
+            csvContent += '訂單編號,稱呼/桌號,總金額,狀態,品項細節\n';
+            
+            allOrders.forEach(o => {
+                let itemsStr = o.items.map(i => `${i.name} x ${i.count}`).join(' ; ');
+                let statusStr = o.status === 'pending' ? '未處理' : (o.status === 'cooking' ? '製作中' : '已完成');
+                // 將字串內的逗號取代，避免破壞 CSV 格式
+                let safeName = o.name.replace(/,/g, ' ');
+                csvContent += `${o.id},${safeName},${o.total},${statusStr},${itemsStr}\n`;
             });
 
-            revElem.innerText = `$${totalRev}`;
-            countElem.innerText = allOrders.length;
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.setAttribute("href", url);
+            link.setAttribute("download", `台東高商點餐紀錄_${new Date().toISOString().slice(0,10)}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        });
 
-            const sortedStats = Object.entries(itemStats).sort((a,b) => b[1].count - a[1].count);
+        window.startOrderListener = () => {
+            let targetCol = (window.appId && window.appId !== 'blue-plate-official') 
+                ? collection(window.db, 'artifacts', window.appId, 'public', 'data', 'orders') 
+                : collection(window.db, 'orders');
+
+            onSnapshot(targetCol, (snap) => {
+                allOrders = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                // 照時間排序（新的在前面）
+                allOrders.sort((a, b) => (b.timestamp?.toMillis() || 0) - (a.timestamp?.toMillis() || 0));
+                renderAdmin();
+            }, (error) => {
+                console.error("監聽訂單失敗", error);
+            });
+        };
+
+        function renderAdmin() {
+            let rev = 0;
+            let count = allOrders.length;
+            let itemStats = {};
+            let historyHtml = '';
+
+            allOrders.forEach(o => {
+                rev += o.total;
+                o.items.forEach(i => {
+                    if(!itemStats[i.name]) itemStats[i.name] = {count: 0, rev: 0};
+                    itemStats[i.name].count += i.count;
+                    itemStats[i.name].rev += (i.count * i.price);
+                });
+
+                let statusColor = o.status === 'pending' ? 'status-pending' : (o.status === 'cooking' ? 'status-cooking' : 'status-done');
+                let statusText = o.status === 'pending' ? '未處理' : (o.status === 'cooking' ? '製作中' : '已完成');
+
+                historyHtml += `
+                <div class="bg-white p-4 rounded-xl shadow-sm border mb-3">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="font-bold text-slate-800">${o.name} <span class="text-xs text-gray-400 ml-2">#${o.id.slice(-4)}</span></span>
+                        <span class="status-badge ${statusColor}">${statusText}</span>
+                    </div>
+                    <div class="text-sm text-gray-600 mb-3 space-y-1">
+                        ${o.items.map(i => `<div class="flex justify-between"><span>${i.name} x ${i.count}</span><span>$${i.price * i.count}</span></div>`).join('')}
+                    </div>
+                    <div class="flex justify-between items-center pt-2 border-t">
+                        <span class="font-black text-blue-900">$${o.total}</span>
+                        <div class="space-x-2">
+                            <button onclick="updateStatus('${o.id}', 'pending')" class="text-xs px-2 py-1 rounded bg-gray-100 hover:bg-gray-200">未處理</button>
+                            <button onclick="updateStatus('${o.id}', 'cooking')" class="text-xs px-2 py-1 rounded bg-green-100 text-green-700 hover:bg-green-200">製作中</button>
+                            <button onclick="updateStatus('${o.id}', 'done')" class="text-xs px-2 py-1 rounded bg-slate-200 text-slate-700 hover:bg-slate-300">完成</button>
+                        </div>
+                    </div>
+                </div>`;
+            });
+
+            document.getElementById('stat-revenue').innerText = '$' + rev;
+            document.getElementById('stat-orders').innerText = count;
+            document.getElementById('order-history').innerHTML = historyHtml;
+
+            let sortedStats = Object.entries(itemStats).sort((a,b) => b[1].count - a[1].count);
             if(sortedStats.length > 0) {
-                statTable.innerHTML = sortedStats.map(([name, data]) => `
+                document.getElementById('stat-table-body').innerHTML = sortedStats.map(([n, s]) => `
                     <tr class="stat-row">
-                        <td class="p-3 font-medium">${name}</td>
-                        <td class="p-3 text-center font-bold text-blue-700">${data.count}</td>
-                        <td class="p-3 text-right text-slate-400">$${data.revenue}</td>
+                        <td class="p-3 text-left font-medium">${n}</td>
+                        <td class="p-3 text-center font-bold text-blue-700">${s.count}</td>
+                        <td class="p-3 text-right text-slate-400">$${s.rev}</td>
                     </tr>
                 `).join('');
             } else {
-                statTable.innerHTML = `<tr><td colspan="3" class="p-8 text-center text-gray-400 italic">尚無統計數據</td></tr>`;
+                document.getElementById('stat-table-body').innerHTML = `<tr><td colspan="3" class="p-8 text-center text-gray-400 italic">尚無統計數據</td></tr>`;
             }
         }
 
-        window.initMenu();
+        // ========== 初始化流程 ==========
+        initMenu();
 
-        // 匿名登入機制與狀態監聽
-        signInAnonymously(auth).then(() => {
-            console.log("Firebase 登入成功");
-        }).catch(err => {
-            console.error("登入失敗", err);
-            // 這裡不再直接跳出 alert，避免打擾單純在編輯器中觀看的體驗，若是在 Netlify 上有問題會顯示在送出按鈕中
-        });
-        
-        onAuthStateChanged(auth, (user) => {
-            if (user) { 
-                window.startOrderListener(); 
+        // Firebase 驗證機制
+        const initAuth = async () => {
+            try {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+            } catch(e) {
+                console.error("Firebase 驗證失敗", e);
+            }
+        };
+
+        initAuth();
+
+        onAuthStateChanged(auth, user => {
+            if(user) {
+                window.startOrderListener();
             }
         });
 
-        document.getElementById('cust-name').addEventListener('input', function() {
-            if (this.value.trim()) {
-                this.classList.remove('input-error', 'border-red-200');
-            }
-        });
     </script>
 </body>
 </html>
