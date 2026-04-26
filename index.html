@@ -161,7 +161,7 @@
             <div class="flex items-center justify-between gap-4">
                 <div class="flex-1 relative">
                     <label for="cust-name" class="absolute -top-6 left-1 text-[10px] font-bold text-red-500">*必填</label>
-                    <input type="text" id="cust-name" placeholder="輸入姓名或桌號" class="w-full border-2 border-gray-100 p-3 rounded-xl text-sm focus:border-blue-500 outline-none transition-all bg-white" required>
+                    <input type="text" id="cust-name" placeholder="請輸入姓名" class="w-full border-2 border-gray-100 p-3 rounded-xl text-sm focus:border-blue-500 outline-none transition-all bg-white" required>
                 </div>
                 <div class="flex items-center gap-3 bg-blue-900 text-white px-5 py-3.5 rounded-2xl cursor-pointer active:scale-95 transition-transform" onclick="toggleCart()">
                     <div class="text-lg relative">
@@ -575,6 +575,23 @@
             }
         };
 
+        // 刪除單筆訂單
+        window.deleteOrder = async (id) => {
+            if(!confirm("確定要刪除這筆訂單嗎？\n刪除後將無法復原！")) return;
+            try {
+                let targetDoc;
+                if (window.appId && window.appId !== 'blue-plate-official') {
+                    targetDoc = doc(window.db, 'artifacts', window.appId, 'public', 'data', 'orders', id);
+                } else {
+                    targetDoc = doc(window.db, 'orders', id);
+                }
+                await deleteDoc(targetDoc);
+            } catch(e) {
+                console.error('刪除訂單失敗', e);
+                alert('刪除失敗，請稍後再試。');
+            }
+        };
+
         window.clearAllOrders = async () => {
             if(!confirm("確定要清空所有訂單紀錄嗎？\n這將無法復原！")) return;
             try {
@@ -649,10 +666,17 @@
                 let statusColor = o.status === 'pending' ? 'status-pending' : (o.status === 'cooking' ? 'status-cooking' : 'status-done');
                 let statusText = o.status === 'pending' ? '未處理' : (o.status === 'cooking' ? '製作中' : '已完成');
 
+                // 處理時間格式
+                let timeStr = '';
+                if (o.timestamp) {
+                    let d = o.timestamp.toDate();
+                    timeStr = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+                }
+
                 historyHtml += `
                 <div class="bg-white p-4 rounded-xl shadow-sm border mb-3">
                     <div class="flex justify-between items-center mb-2">
-                        <span class="font-bold text-slate-800">${o.name} <span class="text-xs text-gray-400 ml-2">#${o.id.slice(-4)}</span></span>
+                        <span class="font-bold text-slate-800">${o.name} <span class="text-xs font-normal text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded ml-2">🕒 ${timeStr}</span> <span class="text-xs text-gray-400 ml-1">#${o.id.slice(-4)}</span></span>
                         <span class="status-badge ${statusColor}">${statusText}</span>
                     </div>
                     <div class="text-sm text-gray-600 mb-3 space-y-1">
@@ -661,9 +685,10 @@
                     <div class="flex justify-between items-center pt-2 border-t">
                         <span class="font-black text-blue-900">$${o.total}</span>
                         <div class="space-x-2">
-                            <button onclick="updateStatus('${o.id}', 'pending')" class="text-xs px-2 py-1 rounded bg-gray-100 hover:bg-gray-200">未處理</button>
-                            <button onclick="updateStatus('${o.id}', 'cooking')" class="text-xs px-2 py-1 rounded bg-green-100 text-green-700 hover:bg-green-200">製作中</button>
-                            <button onclick="updateStatus('${o.id}', 'done')" class="text-xs px-2 py-1 rounded bg-slate-200 text-slate-700 hover:bg-slate-300">完成</button>
+                            <button onclick="updateStatus('${o.id}', 'pending')" class="text-xs px-2 py-1 rounded bg-gray-100 hover:bg-gray-200 font-bold">未處理</button>
+                            <button onclick="updateStatus('${o.id}', 'cooking')" class="text-xs px-2 py-1 rounded bg-green-100 text-green-700 hover:bg-green-200 font-bold">製作中</button>
+                            <button onclick="updateStatus('${o.id}', 'done')" class="text-xs px-2 py-1 rounded bg-slate-200 text-slate-700 hover:bg-slate-300 font-bold">完成</button>
+                            <button onclick="deleteOrder('${o.id}')" class="text-xs px-2 py-1 rounded bg-red-100 text-red-700 hover:bg-red-200 font-bold">刪除</button>
                         </div>
                     </div>
                 </div>`;
