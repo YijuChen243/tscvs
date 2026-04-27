@@ -28,6 +28,14 @@
             75% { transform: translateX(5px); }
         }
         .input-error { border-color: #ef4444 !important; animation: shake 0.2s ease-in-out 0s 2; background-color: #fef2f2; }
+        
+        /* 列印專用樣式 */
+        @media print {
+            body { background-color: #fff !important; padding: 0 !important; margin: 0; }
+            header, nav, main, footer, #cart-modal, #login-modal { display: none !important; }
+            #print-area { display: block !important; }
+            @page { size: A4; margin: 15mm; }
+        }
     </style>
 </head>
 <body class="pb-32">
@@ -149,8 +157,11 @@
         </section>
         <div class="flex justify-between items-center mb-4 px-2">
             <h2 class="text-lg font-black text-slate-800">訂單流水帳</h2>
-            <button id="export-excel-btn" class="text-xs text-blue-600 font-bold px-3 py-1 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors">📋 匯出 Excel (CSV)</button>
-            <button onclick="clearAllOrders()" class="text-xs text-red-500 font-bold px-3 py-1 bg-red-50 rounded-lg">清空紀錄</button>
+            <div class="flex gap-2">
+                <button onclick="printPDF()" class="text-xs text-green-600 font-bold px-3 py-1 bg-green-50 rounded-lg hover:bg-green-100 transition-colors">🖨️ 列印 / PDF</button>
+                <button id="export-excel-btn" class="text-xs text-blue-600 font-bold px-3 py-1 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors">📋 匯出 CSV</button>
+                <button onclick="clearAllOrders()" class="text-xs text-red-500 font-bold px-3 py-1 bg-red-50 rounded-lg">清空紀錄</button>
+            </div>
         </div>
         <div id="order-history" class="space-y-4"></div>
     </main>
@@ -161,7 +172,7 @@
             <div class="flex items-center justify-between gap-4">
                 <div class="flex-1 relative">
                     <label for="cust-name" class="absolute -top-6 left-1 text-[10px] font-bold text-red-500">*必填</label>
-                    <input type="text" id="cust-name" placeholder="請輸入姓名" class="w-full border-2 border-gray-100 p-3 rounded-xl text-sm focus:border-blue-500 outline-none transition-all bg-white" required>
+                    <input type="text" id="cust-name" placeholder="輸入姓名或桌號" class="w-full border-2 border-gray-100 p-3 rounded-xl text-sm focus:border-blue-500 outline-none transition-all bg-white" required>
                 </div>
                 <div class="flex items-center gap-3 bg-blue-900 text-white px-5 py-3.5 rounded-2xl cursor-pointer active:scale-95 transition-transform" onclick="toggleCart()">
                     <div class="text-lg relative">
@@ -205,6 +216,9 @@
             </div>
         </div>
     </div>
+
+    <!-- 列印/PDF 專用隱藏區塊 -->
+    <div id="print-area" style="display: none;"></div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
@@ -633,6 +647,47 @@
             link.click();
             document.body.removeChild(link);
         });
+
+        // 產生 PDF 並列印
+        window.printPDF = () => {
+            if(allOrders.length === 0) return alert('目前沒有任何訂單可以列印');
+
+            // 建立 A4 格式的純 HTML 表格
+            let html = `
+                <div style="font-size: 24px; font-weight: bold; text-align: center; margin-bottom: 20px;">台東高商 點餐明細</div>
+                <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 14pt;">
+                    <thead>
+                        <tr>
+                            <th style="border: 2px solid #000; padding: 10px; width: 25%;">單號 / 桌號</th>
+                            <th style="border: 2px solid #000; padding: 10px; width: 55%;">品項</th>
+                            <th style="border: 2px solid #000; padding: 10px; width: 20%; text-align: center;">數量</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            // 將同訂單的項目整理在一起，並將首格合併以貼近圖片效果
+            allOrders.forEach(o => {
+                o.items.forEach((item, i) => {
+                    html += `<tr>`;
+                    if (i === 0) {
+                        html += `<td style="border: 1px solid #000; padding: 10px; vertical-align: middle;" rowspan="${o.items.length}">
+                                    <div style="font-weight: bold; font-size: 16pt;">#${o.id.slice(-4)}</div>
+                                    <div style="font-size: 12pt; color: #555; margin-top: 4px;">${o.name}</div>
+                                 </td>`;
+                    }
+                    html += `<td style="border: 1px solid #000; padding: 10px;">${item.name}</td>`;
+                    html += `<td style="border: 1px solid #000; padding: 10px; text-align: center; font-weight: bold;">${item.count}</td>`;
+                    html += `</tr>`;
+                });
+            });
+
+            html += `</tbody></table>`;
+            
+            // 寫入列印區塊並呼叫系統列印介面
+            document.getElementById('print-area').innerHTML = html;
+            window.print();
+        };
 
         window.startOrderListener = () => {
             let targetCol = (window.appId && window.appId !== 'blue-plate-official') 
