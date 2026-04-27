@@ -174,7 +174,7 @@
             <div class="flex items-center justify-between gap-4">
                 <div class="flex-1 relative">
                     <label for="cust-name" class="absolute -top-6 left-1 text-[10px] font-bold text-red-500">*必填</label>
-                    <input type="text" id="cust-name" placeholder="輸入姓名或桌號" class="w-full border-2 border-gray-100 p-3 rounded-xl text-sm focus:border-blue-500 outline-none transition-all bg-white" required>
+                    <input type="text" id="cust-name" placeholder="請輸入姓名" class="w-full border-2 border-gray-100 p-3 rounded-xl text-sm focus:border-blue-500 outline-none transition-all bg-white" required>
                 </div>
                 <div class="flex items-center gap-3 bg-blue-900 text-white px-5 py-3.5 rounded-2xl cursor-pointer active:scale-95 transition-transform" onclick="toggleCart()">
                     <div class="text-lg relative">
@@ -515,7 +515,7 @@
             const btn = document.getElementById('submit-btn');
             
             if(!name) {
-                alert('⚠️ 下單失敗！\n\n請先在畫面最下方輸入您的「桌號或稱呼」，我們才知道餐點要送給誰喔！');
+                alert('⚠️ 下單失敗！\n\n請先在畫面最下方輸入您的「姓名或稱呼」，我們才知道餐點要送給誰喔！');
                 toggleCart();
                 nameField.focus();
                 nameField.classList.add('input-error');
@@ -630,7 +630,7 @@
             if(allOrders.length === 0) return alert('目前沒有任何訂單可以匯出');
             
             let csvContent = '\uFEFF'; // 加入 BOM 以支援 UTF-8 (Excel 才不會亂碼)
-            csvContent += '訂單編號,稱呼/桌號,總金額,狀態,品項細節\n';
+            csvContent += '訂單編號,稱呼/姓名,總金額,狀態,品項細節\n';
             
             allOrders.forEach(o => {
                 let itemsStr = o.items.map(i => `${i.name} x ${i.count}`).join(' ; ');
@@ -660,7 +660,7 @@
                 <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 14pt;">
                     <thead>
                         <tr>
-                            <th style="border: 2px solid #000; padding: 10px; width: 25%;">桌號 / 單號</th>
+                            <th style="border: 2px solid #000; padding: 10px; width: 25%;">姓名 / 單號</th>
                             <th style="border: 2px solid #000; padding: 10px; width: 55%;">品項</th>
                             <th style="border: 2px solid #000; padding: 10px; width: 20%; text-align: center;">數量</th>
                         </tr>
