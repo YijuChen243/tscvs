@@ -44,13 +44,13 @@
 <body class="pb-32">
 
     <!-- 不開放點餐提示頁 -->
-    <div id="closed-notice" style="display:none; position:fixed; inset:0; background:#f1f5f9; z-index:9999; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:32px;">
+    <div id="closed-notice" style="display:none; position:fixed; inset:0; background:#f1f5f9; z-index:30; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:32px;">
         <div class="text-6xl mb-6">🚫</div>
         <h2 style="font-size:1.6rem; font-weight:900; color:#1e3a8a; margin-bottom:12px;">目前不開放點餐</h2>
         <p style="color:#64748b; font-size:0.95rem; line-height:1.7;" id="closed-notice-msg">點餐尚未開放，請稍後再回來查看。</p>
     </div>
 
-    <header class="bg-white pt-8 pb-4 text-center border-b shadow-sm">
+    <header class="bg-white pt-8 pb-4 text-center border-b shadow-sm" style="position:relative; z-index:41;">
         <h1 class="text-3xl font-black text-blue-900 tracking-tighter italic">台東高商實習處</h1>
         <p class="text-gray-400 text-xs tracking-widest mt-1">檢定點餐專用</p>
     </header>
@@ -267,7 +267,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, collection, onSnapshot, addDoc, updateDoc, deleteDoc, serverTimestamp, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, doc, collection, onSnapshot, addDoc, updateDoc, deleteDoc, serverTimestamp, getDocs, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // ==========================================
         // ⚠️ 上線前，請確認您的 Firebase API Key 設定
@@ -372,6 +372,7 @@
         let cart = {};
         let allOrders = [];
         let isAdminAuthenticated = false;
+        window.isAdminAuthenticated = false;
 
         window.initMenu = () => {
             const setHtml = (id, html) => document.getElementById(id).innerHTML = html;
@@ -537,12 +538,21 @@
 
             document.getElementById('nav-order').className = v === 'order' ? 'flex-1 py-4 tab-active text-blue-900' : 'flex-1 py-4 text-gray-400';
             document.getElementById('nav-admin').className = v === 'admin' ? 'flex-1 py-4 tab-active text-blue-900' : 'flex-1 py-4 text-gray-400';
+
+            // 切換後台時隱藏封鎖畫面，切換回點餐時重新套用
+            const notice = document.getElementById('closed-notice');
+            if (v === 'admin') {
+                notice.style.display = 'none';
+            } else {
+                applyOrderAvailability(window._orderSettings || { isOpen: false });
+            }
         };
 
         window.checkAdmin = () => {
             const pw = document.getElementById('admin-pw').value;
             if(pw === '8888') {
                 isAdminAuthenticated = true;
+                window.isAdminAuthenticated = true;
                 document.getElementById('login-modal').classList.remove('show');
                 showView('admin');
                 loadOrderSettings();
@@ -642,32 +652,51 @@
 
         // ========== 點餐開放時間管控 ==========
 
-        function saveOrderSettings() {
+        // ========== 點餐開放時間管控（Firebase 跨裝置版）==========
+
+        // 取得設定文件的 Firebase 路徑
+        function getSettingsDocRef() {
+            if (window.appId && window.appId !== 'blue-plate-official') {
+                return doc(window.db, 'artifacts', window.appId, 'public', 'data', 'settings', 'order_control');
+            }
+            return doc(window.db, 'settings', 'order_control');
+        }
+
+        // 儲存設定到 Firebase（後台使用）
+        window.saveOrderSettings = async function() {
             const isOpen = document.getElementById('toggle-open').checked;
             const dateStart = document.getElementById('order-date-start').value;
             const dateEnd = document.getElementById('order-date-end').value;
             const settings = { isOpen, dateStart, dateEnd };
-            localStorage.setItem('bp_order_settings', JSON.stringify(settings));
-            updateOrderSettingsHint();
-            checkOrderAvailability();
-        }
-
-        function loadOrderSettings() {
             try {
-                const raw = localStorage.getItem('bp_order_settings');
-                if (!raw) return;
-                const s = JSON.parse(raw);
-                document.getElementById('toggle-open').checked = !!s.isOpen;
-                if (s.dateStart) document.getElementById('order-date-start').value = s.dateStart;
-                if (s.dateEnd) document.getElementById('order-date-end').value = s.dateEnd;
-                updateOrderSettingsHint();
-            } catch(e) { console.error('讀取點餐設定失敗', e); }
-        }
+                await setDoc(getSettingsDocRef(), settings);
+            } catch(e) {
+                console.error('儲存設定失敗', e);
+                alert('設定儲存失敗，請確認網路連線。');
+            }
+            updateOrderSettingsUI(settings);
+            applyOrderAvailability(settings);
+        };
 
-        function updateOrderSettingsHint() {
+        // 後台登入後載入設定並顯示到 UI
+        window.loadOrderSettings = async function() {
+            try {
+                const snap = await getDoc(getSettingsDocRef());
+                const s = snap.exists() ? snap.data() : { isOpen: false, dateStart: '', dateEnd: '' };
+                document.getElementById('toggle-open').checked = !!s.isOpen;
+                document.getElementById('order-date-start').value = s.dateStart || '';
+                document.getElementById('order-date-end').value = s.dateEnd || '';
+                updateOrderSettingsUI(s);
+            } catch(e) {
+                console.error('讀取設定失敗', e);
+            }
+        };
+
+        // 更新後台狀態提示文字
+        function updateOrderSettingsUI(s) {
             const hint = document.getElementById('order-status-hint');
             if (!hint) return;
-            const { available, reason } = getOrderAvailability();
+            const { available, reason } = evalAvailability(s);
             if (available) {
                 hint.className = 'text-center text-sm font-bold py-2 px-4 rounded-xl bg-green-50 text-green-700';
                 hint.textContent = '✅ 前台目前：開放點餐中';
@@ -677,23 +706,27 @@
             }
         }
 
-        function getOrderAvailability() {
-            try {
-                const raw = localStorage.getItem('bp_order_settings');
-                if (!raw) return { available: true };
-                const s = JSON.parse(raw);
-                if (!s.isOpen) return { available: false, reason: '點餐未開放（開關已關閉）' };
-                const today = new Date().toISOString().slice(0, 10);
-                if (s.dateStart && today < s.dateStart) return { available: false, reason: `點餐尚未開始（開放日：${s.dateStart}）` };
-                if (s.dateEnd && today > s.dateEnd) return { available: false, reason: `點餐已截止（截止日：${s.dateEnd}）` };
-                return { available: true };
-            } catch(e) { return { available: true }; }
+        // 根據設定物件判斷是否開放
+        function evalAvailability(s) {
+            if (!s || !s.isOpen) return { available: false, reason: '點餐未開放（開關已關閉）' };
+            const today = new Date().toISOString().slice(0, 10);
+            if (s.dateStart && today < s.dateStart) return { available: false, reason: `點餐尚未開始（開放日：${s.dateStart}）` };
+            if (s.dateEnd && today > s.dateEnd) return { available: false, reason: `點餐已截止（截止日：${s.dateEnd}）` };
+            return { available: true };
         }
 
-        function checkOrderAvailability() {
-            const { available, reason } = getOrderAvailability();
+        // 套用到前台封鎖畫面（後台模式下不顯示封鎖）
+        function applyOrderAvailability(s) {
+            const { available, reason } = evalAvailability(s);
             const notice = document.getElementById('closed-notice');
             const msg = document.getElementById('closed-notice-msg');
+            // 儲存最新狀態供 showView 使用
+            window._orderSettings = s;
+            // 若已在後台，不顯示封鎖畫面
+            if (window.isAdminAuthenticated) {
+                notice.style.display = 'none';
+                return;
+            }
             if (!available) {
                 if (msg) msg.textContent = reason || '點餐尚未開放，請稍後再回來查看。';
                 notice.style.display = 'flex';
@@ -702,10 +735,39 @@
             }
         }
 
-        // 頁面載入時立即檢查
-        checkOrderAvailability();
-        // 每分鐘自動重新檢查（處理跨日情境）
-        setInterval(checkOrderAvailability, 60000);
+        // 頁面載入時從 Firebase 讀取設定（所有裝置共用）
+        async function initOrderAvailability() {
+            try {
+                const snap = await getDoc(getSettingsDocRef());
+                const s = snap.exists() ? snap.data() : { isOpen: false };
+                applyOrderAvailability(s);
+            } catch(e) {
+                // Firebase 讀取失敗時，預設封鎖（安全優先）
+                console.warn('無法讀取點餐設定，預設封鎖前台', e);
+                applyOrderAvailability({ isOpen: false });
+            }
+        }
+
+        // 監聽 Firebase 設定變動，即時同步到所有裝置
+        function startSettingsListener() {
+            onSnapshot(getSettingsDocRef(), (snap) => {
+                const s = snap.exists() ? snap.data() : { isOpen: false };
+                applyOrderAvailability(s);
+                // 若後台已登入，同步更新後台 UI 提示
+                if (window.isAdminAuthenticated) updateOrderSettingsUI(s);
+            }, (e) => {
+                console.warn('設定監聽失敗', e);
+            });
+        }
+
+        // 每分鐘自動重新判斷日期（處理跨日情境）
+        setInterval(async () => {
+            try {
+                const snap = await getDoc(getSettingsDocRef());
+                const s = snap.exists() ? snap.data() : { isOpen: false };
+                applyOrderAvailability(s);
+            } catch(e) {}
+        }, 60000);
 
         // ========== 下單後回點餐頁 ==========
 
@@ -974,8 +1036,12 @@
         onAuthStateChanged(auth, user => {
             if(user) {
                 window.startOrderListener();
+                startSettingsListener();   // 監聽點餐開放設定，即時同步所有裝置
             }
         });
+
+        // 頁面一開始先讀取一次設定（不等 Firebase 登入，用匿名讀取）
+        initOrderAvailability();
 
     </script>
 </body>
