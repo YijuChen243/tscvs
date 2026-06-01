@@ -97,6 +97,26 @@
         </section>
 
         <section class="category-card">
+            <div class="category-header">🍞 特色厚片 <span class="bg-orange-500 text-white text-[10px] px-1.5 py-0.5 rounded font-bold">NEW</span></div>
+            <div id="special-thick-list" class="p-4 space-y-4 divide-y"></div>
+        </section>
+
+        <section class="category-card">
+            <div class="category-header">🍞 厚奶酥厚片 <span class="bg-orange-500 text-white text-[10px] px-1.5 py-0.5 rounded font-bold">NEW</span></div>
+            <div id="milkcrisp-thick-list" class="p-4 space-y-4 divide-y"></div>
+        </section>
+
+        <section class="category-card">
+            <div class="category-header">🥛 山型鮮奶厚片</div>
+            <div id="freshmilk-thick-list" class="p-4 space-y-4 divide-y"></div>
+        </section>
+
+        <section class="category-card">
+            <div class="category-header">🥐 可頌系列</div>
+            <div id="croissant-list" class="p-4 space-y-4 divide-y"></div>
+        </section>
+
+        <section class="category-card">
             <div class="category-header">🧇 果醬系列</div>
             <div class="overflow-x-auto">
                 <table class="w-full text-sm">
@@ -369,6 +389,33 @@
                 { name: '綠茶牛奶', l: 40, xl: 45 }, { name: '焦糖奶茶', l: 40, xl: 50 },
                 { name: '研磨美式咖啡', m: 30, xl: 49 }, { name: '研磨拿鐵咖啡', m: 40, xl: 69 },
                 { name: '焦糖拿鐵咖啡', m: 45, xl: 79 }
+            ],
+            specialThick: [
+                { name: '酥香蒜味厚片', price: 50 },
+                { name: '摩卡可可厚片', price: 55 },
+                { name: '堅果乳酪厚片', price: 55 }
+            ],
+            milkCrispThick: [
+                { name: '芝麻厚奶酥厚片', price: 50 },
+                { name: '抹茶厚奶酥厚片', price: 50 }
+            ],
+            freshMilkThick: [
+                { name: '花生鮮奶厚片', price: 30 },
+                { name: '藍莓鮮奶厚片', price: 30 },
+                { name: '草莓鮮奶厚片', price: 30 },
+                { name: '巧克力鮮奶厚片', price: 35 },
+                { name: '奶酥鮮奶厚片', price: 35 },
+                { name: '陽光鮪魚焗烤鮮奶厚片', price: 65, rec: true },
+                { name: '煙燻培根焗烤鮮奶厚片', price: 65 },
+                { name: '打拋豬焗烤鮮奶厚片', price: 69 }
+            ],
+            croissants: [
+                { name: '蛋沙拉芝士可頌', price: 60 },
+                { name: '鮪魚玉米可頌', price: 65 },
+                { name: '泡菜牛肉可頌', price: 75 },
+                { name: '墨西哥蝦排可頌(辣)', price: 75 },
+                { name: '塔塔雞柳條可頌', price: 75 },
+                { name: '薯餅蛋沙拉可頌', price: 75 }
             ]
         };
 
@@ -409,6 +456,18 @@
                     <td class="p-2"><div class="flex justify-center"><div class="price-btn" data-name="${t.name}(山)" onclick="toggleItem('${t.name}(山)',${t.p2})">$${t.p2}</div></div></td>
                 </tr>
             `).join(''));
+
+            const renderThickList = (id, list) => setHtml(id, list.map(s => `
+                <div class="pt-4 flex justify-between items-center">
+                    <div class="font-bold text-slate-800">${s.rec ? '⭐ ' : ''}${s.name}</div>
+                    <div class="price-btn text-blue-800 font-black" data-name="${s.name}" onclick="toggleItem('${s.name}',${s.price})">$${s.price}</div>
+                </div>
+            `).join(''));
+
+            renderThickList('special-thick-list', menuData.specialThick);
+            renderThickList('milkcrisp-thick-list', menuData.milkCrispThick);
+            renderThickList('freshmilk-thick-list', menuData.freshMilkThick);
+            renderThickList('croissant-list', menuData.croissants);
 
             setHtml('jam-list', menuData.jams.map(j => `
                 <tr class="divide-x divide-gray-50">
