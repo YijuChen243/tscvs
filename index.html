@@ -77,7 +77,7 @@
             <div class="overflow-x-auto">
                 <table class="w-full text-sm">
                     <thead class="bg-gray-50 border-b">
-                        <tr><th class="p-3 text-left text-gray-500">品項名稱</th><th class="p-3 text-center text-xs">漢堡</th><th class="p-3 text-center text-xs">菠蘿</th></tr>
+                        <tr><th class="p-3 text-left text-gray-500">品項名稱</th><th class="p-3 text-center text-xs">美式漢堡</th><th class="p-3 text-center text-xs">菠蘿堡</th></tr>
                     </thead>
                     <tbody id="burger-list" class="divide-y"></tbody>
                 </table>
@@ -300,19 +300,22 @@
             platters: [
                 { name: "古早味炒麵佐蘿蔔糕拼盤", price: 89, desc: "含蛋與綜合炸物" },
                 { name: "鮮奶山峰厚片拼盤", price: 99, desc: "山型厚片、炒蛋、蔬果沙拉" },
+                { name: "Blue Plate綜合炸物佐沙拉", price: 109, desc: "雞塊*4、綜合炸物、蔬果沙拉" },
                 { name: "美式牛肉佐鱈魚拼盤", price: 119, desc: "海陸雙拼、厚牛鱈魚、沙拉" },
-                { name: "厚牛起司堡雞塊拼盤", price: 119, desc: "厚牛堡、雞塊、薯泥球" }
+                { name: "厚牛起司堡雞塊拼盤", price: 119, desc: "厚牛堡、雞塊、薯泥球" },
+                { name: "雙泥沙拉炒蛋佐菠蘿堡", price: 119, desc: "起司菠蘿堡、炒蛋、芋泥球、炸物、沙拉" },
+                { name: "田野培根薯餅可頌佐沙拉", price: 129, desc: "可頌麵包、培根、薯餅、水煮蛋、沙拉" }
             ],
             noodles: [
                 { name: '中式炒麵', price: 35 }, { name: '煙燻培根炒麵', price: 49 },
                 { name: '鐵板雞排炒麵', price: 65 }, { name: '香煎腿排炒麵', price: 75 },
                 { name: '黑胡椒鐵板麵+蛋', price: 55 }, { name: '蘑菇鐵板麵+蛋', price: 55 },
-                { name: '炒泡麵(原味)', price: 59 }, { name: '泡菜炒泡麵', price: 69 },
-                { name: '打拋豬炒泡麵', price: 75 }, { name: '鐵板雞排炒泡麵', price: 89 },
-                { name: '鍋燒意麵', price: 75 }, { name: '鍋燒雞絲麵', price: 75 },
-                { name: '鍋燒冬粉', price: 75 }, { name: '鍋燒烏龍麵', price: 79 },
-                { name: '泡菜鍋燒意麵', price: 85 }, { name: '泡菜鍋燒雞絲麵', price: 85 },
-                { name: '泡菜鍋燒冬粉', price: 85 }, { name: '泡菜鍋燒烏龍麵', price: 89 },
+                { name: '炒泡麵(原味)', price: 65 }, { name: '泡菜炒泡麵', price: 75 },
+                { name: '打拋豬炒泡麵', price: 79 }, { name: '鐵板雞排炒泡麵', price: 95},
+                { name: '鍋燒意麵', price: 79 }, { name: '鍋燒雞絲麵', price: 79 },
+                { name: '鍋燒冬粉', price: 79 }, { name: '鍋燒烏龍麵', price: 85 },
+                { name: '泡菜鍋燒意麵', price: 89 }, { name: '泡菜鍋燒雞絲麵', price: 89 },
+                { name: '泡菜鍋燒冬粉', price: 89 }, { name: '泡菜鍋燒烏龍麵', price: 95 },
                 { name: '麻辣燙細麵', price: 69 }, { name: '椒麻刀削麵', price: 75 },
                 { name: '麻醬關廟麵', price: 75 }, { name: '蔥油乾拌麵', price: 75 }
             ],
@@ -320,20 +323,20 @@
                 { name: '墨西哥雞肉芝士堡', p1: 50, p2: 55 }, { name: '醬汁燒肉芝士堡', p1: 55, p2: 60 },
                 { name: '元氣豬肉芝士堡', p1: 55, p2: 60 }, { name: '鐵板雞排芝士堡', p1: 60, p2: 65 },
                 { name: '芥末黃瓜牛肉芝士堡', p1: 60, p2: 65 }, { name: '塔塔醬魚排芝士堡', p1: 60, p2: 65 },
-                { name: '墨西哥蝦排芝士堡', p1: 65, p2: 70 }, { name: '卡啦雞腿芝士堡(原味)', p1: 65, p2: 70 },
-                { name: '墨西哥卡啦雞腿芝士堡', p1: 70, p2: 75 }, { name: '香煎腿排芝士堡', p1: 70, p2: 75 },
-                { name: '培根厚牛芝士堡', p1: 70, p2: 75 }, { name: '雙層厚豬芝士堡', p1: 75, p2: 79 },
-                { name: '雙層厚牛芝士堡', p1: 75, p2: 79 }, { name: '花醬培根厚牛芝士堡', p1: 75, p2: 79 },
+                { name: '墨西哥蝦排芝士堡(辣)', p1: 65, p2: 70 }, { name: '卡啦雞腿芝士堡(原味)', p1: 65, p2: 70 },
+                { name: '墨西哥卡啦雞腿芝士堡(辣)', p1: 70, p2: 75 }, { name: '香煎腿排芝士堡', p1: 75, p2: 79 },
+                { name: '培根厚牛芝士堡', p1: 75, p2: 79 }, { name: '雙層厚豬芝士堡', p1: 79, p2: 85 },
+                { name: '雙層厚牛芝士堡', p1: 79, p2: 85 }, { name: '花醬培根厚牛芝士堡', p1: 79, p2: 85 },
                 { name: '起司菠蘿堡', p2: 35 }, { name: '花生起司菠蘿堡', p2: 45 }
             ],
             toasts: [
                 { name: '田園蔬菜煎蛋', p1: 35, p2: 40 }, { name: '火腿芝士', p1: 40, p2: 45 },
-                { name: '煙燻培根芝士', p1: 40, p2: 45 }, { name: '手炒肉鬆蛋', p1: 40, p2: 45 },
+                { name: '煙燻培根芝士', p1: 40, p2: 45 }, { name: '芥末黃瓜牛肉芝士', p1: 60, p2: 65 },
                 { name: '陽光鮪魚芝士', p1: 40, p2: 45 }, { name: '墨西哥雞肉芝士', p1: 45, p2: 50 },
                 { name: '元氣豬肉芝士', p1: 50, p2: 55 }, { name: '醬汁燒肉芝士', p1: 50, p2: 55 },
-                { name: '鐵板雞排芝士', p1: 55, p2: 60 }, { name: '塔塔醬魚排芝士', p1: 55, p2: 60 },
+                { name: '鐵板雞排芝士', p1: 60, p2: 65 }, { name: '塔塔醬魚排芝士', p1: 55, p2: 60 },
                 { name: '墨西哥蝦排芝士', p1: 60, p2: 65 }, { name: '卡啦雞腿芝士(原味)', p1: 60, p2: 65 },
-                { name: '墨西哥卡啦雞腿芝士', p1: 65, p2: 70 }, { name: '香煎腿排芝士', p1: 65, p2: 70 }
+                { name: '墨西哥卡啦雞腿芝士', p1: 65, p2: 70 }, { name: '香煎腿排芝士', p1: 70, p2: 75 }
             ],
             jams: [
                 { f: "花生", t: 20, c: 45, w: 45 }, { f: "巧克力", t: 20, c: 45, w: 45 },
@@ -342,21 +345,21 @@
                 { f: "芒果", t: 25, c: 50, w: 50 }
             ],
             eggs: [
-                { name: '原味蛋餅', p: 30 }, { name: '香甜玉米蛋餅', p: 35 }, { name: '特濃芝士蛋餅', p: 35 },
-                { name: '田園蔬菜蛋餅', p: 35 }, { name: '香煎火腿蛋餅', p: 40 }, { name: '熱狗蛋餅', p: 40 },
-                { name: '手炒肉鬆蛋餅', p: 40 }, { name: '煙燻培根蛋餅', p: 40 }, { name: '陽光鮪魚蛋餅', p: 40 },
-                { name: '黃金薯餅蛋餅', p: 45 }, { name: '爆漿乳酪芝士蛋餅', p: 45 }, { name: '泰式打拋豬蛋餅', p: 50 },
-                { name: '醬汁燒肉蛋餅', p: 50 }, { name: '芋泥肉鬆蛋餅', p: 50 }, { name: '厚豬蛋餅', p: 55 },
-                { name: '厚牛蛋餅', p: 60 }
+                { name: '原味蛋餅', p: 30 }, { name: '香甜玉米蛋餅', p: 40 }, { name: '特濃芝士蛋餅', p: 40 },
+                { name: '田園蔬菜蛋餅', p: 40 }, { name: '香煎火腿蛋餅', p: 40 }, { name: '熱狗蛋餅', p: 45 },
+                { name: '手炒肉鬆蛋餅', p: 45 }, { name: '煙燻培根蛋餅', p: 45 }, { name: '陽光鮪魚蛋餅', p: 45 },
+                { name: '黃金薯餅蛋餅', p: 50 }, { name: '爆漿乳酪芝士蛋餅', p: 50 }, { name: '泰式打拋豬蛋餅', p: 50 },
+                { name: '醬汁燒肉蛋餅', p: 55 }, { name: '芋泥肉鬆蛋餅', p: 55 }, { name: '厚豬蛋餅', p: 60 },
+                { name: '厚牛蛋餅', p: 65 }, { name: '香濃芋泥蛋餅', p: 45 }
             ],
             snacks: [
-                { name: '黃金薯餅', price: 25 }, { name: '熱狗香蛋捲', price: 30 },
-                { name: '金磚蘿蔔糕', price: 35 }, { name: '金磚蘿蔔糕加蛋', price: 45 },
-                { name: '小熱狗3條', price: 20 }, { name: '骰子雞球', price: 45 },
+                { name: '黃金薯餅', price: 20 }, { name: '熱狗香蛋捲', price: 40 },
+                { name: '金磚蘿蔔糕', price: 40 }, { name: '金磚蘿蔔糕加蛋', price: 55 },
+                { name: '小熱狗3條', price: 25 }, { name: '骰子雞球', price: 45 },
                 { name: '麥克雞塊(5入)', price: 39 }, { name: '美式脆薯', price: 35 },
-                { name: '煎餃', price: 35 }, { name: '檸檬雞柳條2入', price: 45 },
-                { name: '洋蔥有圈圈5個', price: 39 }, { name: '荷包蛋', price: 12 },
-                { name: '蔥油餅加蛋', price: 40 }
+                { name: '煎餃', price: 40 }, { name: '檸檬雞柳條3入', price: 45 },
+                { name: '洋蔥有圈圈5個', price: 45 }, { name: '荷包蛋', price: 15 },
+                { name: '蔥油餅加蛋', price: 40 }, { name: '地瓜條', price: 35 }
             ],
             drinks: [
                 { name: '阿薩姆紅茶', m: 20, l: 25, xl: 30 }, { name: '茉香綠茶', m: 20, l: 25, xl: 30 },
@@ -365,7 +368,7 @@
                 { name: '豆漿紅茶', m: 25, l: 30, xl: 35 }, { name: '紅茶牛奶', l: 40, xl: 45 },
                 { name: '綠茶牛奶', l: 40, xl: 45 }, { name: '焦糖奶茶', l: 40, xl: 50 },
                 { name: '研磨美式咖啡', m: 30, xl: 49 }, { name: '研磨拿鐵咖啡', m: 40, xl: 69 },
-                { name: '焦糖拿鐵咖啡', m: 40, xl: 69 }
+                { name: '焦糖拿鐵咖啡', m: 45, xl: 79 }
             ]
         };
 
